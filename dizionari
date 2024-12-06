@@ -3,104 +3,75 @@
 template <typename T>
 class Dizionario {
 private:
-    static const int TABLE_SIZE = 100;  // Definiamo la dimensione della tabella hash
+    static const int TABLE_SIZE = 100; // Dimensione fissa della tabella hash
     struct Entry {
-        std::string key;  // La chiave della coppia chiave-valore
-        T value;          // Il valore associato alla chiave
-        bool isOccupied = false;  // Flag per indicare se la posizione è occupata
+        std::string key;
+        T value;
+        bool isOccupied = false;
     };
 
-    Entry table[TABLE_SIZE];  // Tabella hash che memorizza le coppie chiave-valore
+    Entry table[TABLE_SIZE];
 
-    // Funzione di hash che calcola l'indice per una data chiave
+    // Funzione hash di base
     int hashFunction(const std::string key) const {
         int hash = 0;
-        // Calcolo l'hash sommando i valori ASCII dei caratteri della chiave
         for (char ch : key) {
-            hash = (hash * 31 + ch) % TABLE_SIZE;  // Moltiplico per 31 e faccio il modulo con TABLE_SIZE
+            hash = (hash * 31 + ch) % TABLE_SIZE; // Algoritmo di hashing semplice
         }
-        return hash;  // Restituisco l'indice dell'array
+        return hash;
     }
 
 public:
-    
-    // Metodo per inserire una coppia chiave-valore
+    // Metodo per aggiungere una coppia chiave-valore
     void inserisci(const std::string key, const T value) {
-        int index = hashFunction(key);  // Trovo l'indice iniziale tramite la funzione di hash
+        int index = hashFunction(key);
 
-        // Gestione delle collisioni: se la posizione è già occupata, faccio linear probing
-        while (table[index].isOccupied) {
-            // Se la chiave esiste già, aggiorno il valore
-            if (table[index].key == key) {
-                table[index].value = value;
-                return;  // Esco se ho aggiornato il valore
-            }
-            // Altrimenti, passo al prossimo indice
-            index = (index + 1) % TABLE_SIZE;
+        if (table[index].isOccupied) {
+            std::cerr << "Collision detected for key: " << key << " at index " << index << ". Not handling collisions.\n";
+            return;
         }
 
-        // Se l'indice è libero, inserisco la coppia chiave-valore
         table[index].key = key;
         table[index].value = value;
-        table[index].isOccupied = true;  // Segno la posizione come occupata
+        table[index].isOccupied = true;
     }
 
-    // Metodo per rimuovere una coppia chiave-valore dal dizionario
-    void rimuovi(const std::string& key) {
-        int index = hashFunction(key);  // Trovo l'indice iniziale tramite la funzione di hash
-
-        // Scansiono la tabella per trovare la chiave
-        while (table[index].isOccupied) {
-            // Se la chiave è trovata, la rimuovo
-            if (table[index].key == key) {
-                table[index].isOccupied = false;  // Marca la cella come "libera"
-                break;  // Esco dal ciclo se la chiave è stata trovata e rimossa
-            }
-            // Passo al prossimo indice se la chiave non è qui
-            index = (index + 1) % TABLE_SIZE;
-        }
-    }
-
-    // Metodo per recuperare il valore associato a una chiave
+    // Metodo per ottenere il valore associato a una chiave
     T recupera(const std::string key) const {
-        int index = hashFunction(key);  // Trovo l'indice iniziale tramite la funzione di hash
+        int index = hashFunction(key);
 
-        // Scansiono la tabella per trovare la chiave
-        while (table[index].isOccupied) {
-            // Se trovo la chiave, restituisco il suo valore
-            if (table[index].key == key) {
-                return table[index].value;
-            }
-            // Passo al prossimo indice se la chiave non è qui
-            index = (index + 1) % TABLE_SIZE;
+        if (table[index].isOccupied && table[index].key == key) {
+            return table[index].value;
         }
 
-        // Se la chiave non è trovata, restituisco un messaggio di errore
         return "Key not found!";
     }
 
-    // Metodo per verificare se una chiave è presente nel dizionario
-    bool contiene(const std::string& key) {
-        int index = hashFunction(key);  // Trovo l'indice iniziale tramite la funzione di hash
+    // Metodo per cancellare una coppia chiave-valore
+    void cancella(const std::string key) {
+        int index = hashFunction(key);
 
-        // Scansiono la tabella per trovare la chiave
-        while (table[index].isOccupied) {
-            // Se la chiave è trovata, restituisco true
-            if (table[index].key == key) {
-                return true;
-            }
-            // Passo al prossimo indice se la chiave non è qui
-            index = (index + 1) % TABLE_SIZE;
+        if (table[index].isOccupied == true && table[index].key == key) {
+            table[index].isOccupied = false; // Libera la posizione
+            std::cout << "Chiave " << key << " cancellata.\n";
+        } else {
+            std::cout << "Chiave " << key << " non trovata.\n";
         }
-
-        // Se la chiave non è trovata, restituisco false
-        return false;
     }
 
-    // Metodo per stampare tutte le coppie chiave-valore nel dizionario
+    // Metodo per verificare se una chiave è presente nel dizionario
+    bool appartiene(const std::string key) const {
+        int index = hashFunction(key);
+
+        if (table[index].isOccupied == true && table[index].key == key) {
+            return true; // La chiave è presente
+        }
+        else
+        return false; // La chiave non è presente
+    }
+
+    // Metodo per stampare il contenuto del dizionario
     void stampa() const {
-        std::cout << "Contenuto del dizionario:\n";
-        // Scansiono la tabella e stampo le coppie chiave-valore occupate
         for (int i = 0; i < TABLE_SIZE; ++i) {
             if (table[i].isOccupied) {
                 std::cout << "Index " << i << ": " << table[i].key << " => " << table[i].value << "\n";
